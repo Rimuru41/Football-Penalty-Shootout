@@ -60,6 +60,7 @@ player_turn=True
 is_collides=False
 to_restart=False
 time_start = False
+is_goal=False
 time = 1000
 space_pressed = False
 to_shoot = False
@@ -460,7 +461,7 @@ class Ball:
         
 
     def update(self):
-        global time_start,time
+        global time_start,time,is_goal
 
         if not self.is_collide:
             self.direction_x = self.target_x - self.x
@@ -523,9 +524,12 @@ class Ball:
 
 
         #bouncing
+        
+
         if time_start and self.y<320: 
 
             if self.x==self.target_x and self.y==self.target_y:
+                is_goal=True
                 if self.y==280:
                    self.count+=1
                    self.collide_with_keeper=False
@@ -656,8 +660,8 @@ font = pygame.font.Font(None, 36)  # None uses default font, 36 is font size
 # Render text surfaces
 player_score_surface = font.render(f'Player 1: {player_score}', True, (255, 255, 255))
 computer_score_surface = font.render(f'Player 2: {computer_score}', True, (255, 255, 255))
-
-
+isgoal=font.render(f'Goal!!!!!!!', True, (0, 0, 0))
+ismissed=font.render(f'Missed!!!!!',True,(0,0,0))
 
 
 def render_scores():
@@ -732,7 +736,7 @@ def show_results():
 def main_game():
     main_menu_button = Button("Main Menu", (10, 80), None,bg="light blue")
 
-    global is_collides,to_restart,to_shoot,space_pressed,player_score,player_turn,moving_circle_dx,moving_circle_dy,moving_circle_radius,moving_circle_y,moving_circle_x,time_start,count,check_for_key
+    global is_collides,to_restart,to_shoot,space_pressed,is_goal,player_score,player_turn,moving_circle_dx,moving_circle_dy,moving_circle_radius,moving_circle_y,moving_circle_x,time_start,count,check_for_key
     football = Ball(503, 606, 25)
     keeper=Goalkeeper()
     running=True
@@ -768,7 +772,8 @@ def main_game():
             moving_circle_y -= moving_circle_dy
             to_shoot = False
         if keys[pygame.K_RIGHT]:
-            moving_circle_y += moving_circle_dy
+            if moving_circle_y+moving_circle_radius<330:
+                moving_circle_y += moving_circle_dy
         if keys[pygame.K_LEFT]:
             if moving_circle_y+moving_circle_radius<330:
                 if moving_circle_dy==0:
@@ -820,11 +825,20 @@ def main_game():
             football.collide_with_keeper=True
             football.football_collision_with_keeper=False 
 
+      
+       
+        if football.is_collide and not is_goal:
+            win.blit(ismissed,(460,100))
+        if is_goal and not football.is_collide:
+            win.blit(isgoal,(460,100))
+
         if keeper.has_landed and football.ball_landed:
-            reset_game(football,keeper)  # Reset the game when the keeper lands
+            
+            reset_game(football,keeper)
+            is_goal=False  # Reset the game when the keeper lands
         if not time_start:
             pygame.draw.circle(win, (0, 0, 0), (moving_circle_x, moving_circle_y), moving_circle_radius)
-
+       
         win.blit(player_score_surface, (20, 20))
         win.blit(computer_score_surface, (win_width - computer_score_surface.get_width() - 20, 20))
         main_menu_button.show(win)
