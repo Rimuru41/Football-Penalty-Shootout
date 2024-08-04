@@ -61,6 +61,7 @@ is_collides=False
 to_restart=False
 time_start = False
 is_goal=False
+is_out=False
 time = 1000
 space_pressed = False
 to_shoot = False
@@ -461,7 +462,7 @@ class Ball:
         
 
     def update(self):
-        global time_start,time,is_goal
+        global time_start,time,is_goal,is_out
 
         if not self.is_collide:
             self.direction_x = self.target_x - self.x
@@ -529,7 +530,13 @@ class Ball:
         if time_start and self.y<320: 
 
             if self.x==self.target_x and self.y==self.target_y:
-                is_goal=True
+                if self.x<inner_bottom_right_bar[0] and self.x>inner_bottom_left_bar[0]:
+                   
+                    is_goal=True
+                   
+                else:
+                    is_out=True
+                    is_goal=False
                 if self.y==280:
                    self.count+=1
                    self.collide_with_keeper=False
@@ -657,11 +664,12 @@ def display_results(win, player_score, computer_score, outcome):
 #scores updating in the screen
 # Load font
 font = pygame.font.Font(None, 36)  # None uses default font, 36 is font size
+status_font=pygame.font.Font(None,80)
 # Render text surfaces
 player_score_surface = font.render(f'Player 1: {player_score}', True, (255, 255, 255))
 computer_score_surface = font.render(f'Player 2: {computer_score}', True, (255, 255, 255))
-isgoal=font.render(f'Goal!!!!!!!', True, (0, 0, 0))
-ismissed=font.render(f'Missed!!!!!',True,(0,0,0))
+isgoal=status_font.render(f'Goal!!!!!!!!!', True, (0, 0, 0))
+ismissed=status_font.render(f'Missed!!!!!!',True,(0,0,0))
 
 
 def render_scores():
@@ -736,7 +744,7 @@ def show_results():
 def main_game():
     main_menu_button = Button("Main Menu", (10, 80), None,bg="light blue")
 
-    global is_collides,to_restart,to_shoot,space_pressed,is_goal,player_score,player_turn,moving_circle_dx,moving_circle_dy,moving_circle_radius,moving_circle_y,moving_circle_x,time_start,count,check_for_key
+    global is_collides,to_restart,to_shoot,space_pressed,is_goal,player_score,player_turn,moving_circle_dx,moving_circle_dy,moving_circle_radius,moving_circle_y,moving_circle_x,time_start,count,check_for_key,is_out
     football = Ball(503, 606, 25)
     keeper=Goalkeeper()
     running=True
@@ -827,13 +835,13 @@ def main_game():
 
       
        
-        if football.is_collide and not is_goal:
-            win.blit(ismissed,(460,100))
+        if (football.is_collide and not is_goal) or is_out:
+            win.blit(ismissed,(380,100))
         if is_goal and not football.is_collide:
-            win.blit(isgoal,(460,100))
+            win.blit(isgoal,(380,100))
 
         if keeper.has_landed and football.ball_landed:
-            
+            is_out=False
             reset_game(football,keeper)
             is_goal=False  # Reset the game when the keeper lands
         if not time_start:
