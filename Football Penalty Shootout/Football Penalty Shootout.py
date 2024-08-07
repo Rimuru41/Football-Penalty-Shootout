@@ -57,6 +57,7 @@ moving_circle_dy = 0.8
 
 #flags
 player_turn=True
+change=False
 is_collides=False
 to_restart=False
 time_start = False
@@ -507,9 +508,9 @@ class Ball:
             self.x+=self.direction_x*self.speed
             self.y+=self.direction_x*self.speed
         elif self.is_collide_up:
-            if self.x<500:
+            if self.x<530 and self.x>410:
                 self.x+=self.direction_x*self.speed
-                self.y+=self.direction_x*self.speed*2.5   
+                self.y-=self.speed  
             else:
                 self.x+=self.direction_x*self.speed*2
                 self.y-=self.direction_x*self.speed*2   
@@ -670,7 +671,8 @@ player_score_surface = font.render(f'Player 1: {player_score}', True, (255, 255,
 computer_score_surface = font.render(f'Player 2: {computer_score}', True, (255, 255, 255))
 isgoal=status_font.render(f'Goal!!!!!!!!!', True, (0, 0, 0))
 ismissed=status_font.render(f'Missed!!!!!!',True,(0,0,0))
-
+isplayer= font.render(f'Player 1', True, (255, 255, 255))
+iscomputer= font.render(f'Player 2', True, (255, 255, 255))
 
 def render_scores():
     # Render text surfaces
@@ -679,8 +681,9 @@ def render_scores():
     computer_score_surface = font.render(f'Player 2: {computer_score}', True, (255, 255, 255))
 
 def reset_game(football,keeper):
-    global player_turn,player_score,computer_score, time_start, to_shoot, moving_circle_x, moving_circle_y, moving_circle_dx, moving_circle_dy, is_collides, space_pressed,ball_radius,ball_initial_x,ball_initial_y,check_for_key,count
+    global player_turn,change,player_score,computer_score, time_start, to_shoot, moving_circle_x, moving_circle_y, moving_circle_dx, moving_circle_dy, is_collides, space_pressed,ball_radius,ball_initial_x,ball_initial_y,check_for_key,count
     print('Restart')
+    
     
        
     
@@ -715,6 +718,7 @@ def reset_game(football,keeper):
     is_collides = False
     space_pressed = False
     check_for_key=True
+ 
     render_scores()
 
 def show_results():
@@ -744,7 +748,7 @@ def show_results():
 def main_game():
     main_menu_button = Button("Main Menu", (10, 80), None,bg="light blue")
 
-    global is_collides,to_restart,to_shoot,space_pressed,is_goal,player_score,player_turn,moving_circle_dx,moving_circle_dy,moving_circle_radius,moving_circle_y,moving_circle_x,time_start,count,check_for_key,is_out
+    global is_collides,change,to_restart,to_shoot,space_pressed,is_goal,player_score,player_turn,moving_circle_dx,moving_circle_dy,moving_circle_radius,moving_circle_y,moving_circle_x,time_start,count,check_for_key,is_out
     football = Ball(503, 606, 25)
     keeper=Goalkeeper()
     running=True
@@ -753,7 +757,7 @@ def main_game():
     while running:
 
         keys = pygame.key.get_pressed()
-       # print(pygame.mouse.get_pos())
+        #print(pygame.mouse.get_pos())
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -821,7 +825,10 @@ def main_game():
         keeper.draw(win)
 
 
-
+        if not change:
+            win.blit(isplayer,(keeper.initial_x,50))
+        else:
+            win.blit(iscomputer,(keeper.initial_x,50))
         # print(is_collides)
         if  not is_collides:
             keeper.collision(win,football)
@@ -842,6 +849,7 @@ def main_game():
 
         if keeper.has_landed and football.ball_landed:
             is_out=False
+            change=not change
             reset_game(football,keeper)
             is_goal=False  # Reset the game when the keeper lands
         if not time_start:
